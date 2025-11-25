@@ -13,7 +13,6 @@ class TransactionRequest(BaseModel):
 
     amount: float
     currency: str
-    txn_status: str
     transaction_type: Optional[str] = None
     payment_channel: Optional[str] = None
 

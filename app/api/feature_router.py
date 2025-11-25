@@ -8,7 +8,7 @@ from app.repositories.blacklist_repository import BlacklistRepository
 
 
 router = APIRouter(
-    prefix="/features",
+    prefix="/api/v1/features",
     tags=["features"]
 )
 

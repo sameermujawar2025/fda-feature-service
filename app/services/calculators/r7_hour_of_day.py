@@ -1,14 +1,13 @@
-# app/services/calculators/r8_high_value_flag.py
+# app/services/calculators/r7_hour_of_day.py
 from app.services.calculators.base import FeatureCalculator
 from app.models.transaction_models import TransactionRequest
 from app.models.feature_models import FeatureVector
-from app.config.settings import settings
 
 
-class R8HighValueFlagCalculator(FeatureCalculator):
+class R7HourOfDayCalculator(FeatureCalculator):
     """
-    R8 – high_value_flag
+    R7 – hour_of_day
     """
 
     def calculate(self, txn: TransactionRequest, features: FeatureVector) -> None:
-        features.high_value_flag = txn.amount >= settings.high_value_threshold
+        features.hour_of_day = txn.timestamp.hour

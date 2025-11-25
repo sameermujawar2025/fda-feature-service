@@ -1,25 +1,21 @@
-# app/services/calculators/r4_impossible_travel.py
+# app/services/calculators/r4_impossible_travel.py,distance + speed validation
 from datetime import timezone
 from app.services.calculators.base import FeatureCalculator
+from app.repositories.transaction_repository import TransactionRepository
 from app.models.transaction_models import TransactionRequest
 from app.models.feature_models import FeatureVector
-from app.repositories.transaction_repository import TransactionRepository
 from app.utils.geo import haversine_km, compute_speed_kmph
 
 
-class ImpossibleTravelCalculator(FeatureCalculator):
+class R4ImpossibleTravelCalculator(FeatureCalculator):
     """
-    R4 – distance_from_last_location_km, speed_kmph
+    R4 – distance_from_last_location_km & speed_kmph
     """
 
-    def __init__(self, repo: TransactionRepository):
+    def __init__(self, repo):
         self.repo = repo
 
-    def calculate(
-        self,
-        txn: TransactionRequest,
-        features: FeatureVector
-    ) -> None:
+    def calculate(self, txn: TransactionRequest, features: FeatureVector) -> None:
         if txn.current_latitude is None or txn.current_longitude is None:
             return
 
@@ -28,6 +24,7 @@ class ImpossibleTravelCalculator(FeatureCalculator):
             card_number=txn.card_number,
             before_time=txn.timestamp
         )
+
         if not last:
             return
 
@@ -35,27 +32,19 @@ class ImpossibleTravelCalculator(FeatureCalculator):
         last_lon = last.get("current_longitude")
         last_ts = last.get("timestamp")
 
-        if last_lat is None or last_lon is None or last_ts is None:
+        if not last_lat or not last_lon or not last_ts:
             return
 
         if last_ts.tzinfo is None:
             last_ts = last_ts.replace(tzinfo=timezone.utc)
-        if txn.timestamp.tzinfo is None:
-            current_ts = txn.timestamp.replace(tzinfo=timezone.utc)
-        else:
-            current_ts = txn.timestamp
+        ts = txn.timestamp.replace(tzinfo=timezone.utc) if txn.timestamp.tzinfo is None else txn.timestamp
 
-        dt = (current_ts - last_ts).total_seconds() / 3600.0
-        if dt <= 0:
+        hours = (ts - last_ts).total_seconds() / 3600
+        if hours <= 0:
             return
 
-        dist = haversine_km(
-            lat1=last_lat,
-            lon1=last_lon,
-            lat2=txn.current_latitude,
-            lon2=txn.current_longitude,
-        )
-        speed = compute_speed_kmph(dist, dt)
+        distance = haversine_km(last_lat, last_lon, txn.current_latitude, txn.current_longitude)
+        speed = compute_speed_kmph(distance, hours)
 
-        features.distance_from_last_location_km = dist
+        features.distance_from_last_location_km = distance
         features.speed_kmph = speed
