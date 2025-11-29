@@ -21,9 +21,6 @@ class FeatureVector(BaseModel):
     hour_of_day: Optional[int] = None                   # R7
     high_value_flag: Optional[bool] = None              # R8
 
-    # Blacklist
-    blacklist_flag: Optional[bool] = None               # R9
-    blacklist_matches: Optional[List[Dict]] = None      # details from DB if any
 
 
 class FeatureResponse(BaseModel):

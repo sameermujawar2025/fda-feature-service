@@ -34,7 +34,6 @@ class FeatureService:
         self.txn_repo = txn_repo
         self.bl_repo = bl_repo
 
-        # ⚠️ THIS WAS WRONG EARLIER → now corrected
         self.calculators: List[FeatureCalculator] = [
             R1VelocityCalculator(txn_repo),
             R2IPClusteringCalculator(txn_repo),
@@ -44,7 +43,6 @@ class FeatureService:
             R6CountryJumpCalculator(txn_repo),
             R7HourOfDayCalculator(),
             R8HighValueFlagCalculator(),
-            R9BlacklistFlagCalculator(bl_repo),
         ]
 
     def compute_features(
